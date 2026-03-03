@@ -2,4 +2,3 @@ __pycache__/
 venv/
 *.env
 metas.db
-config.py
