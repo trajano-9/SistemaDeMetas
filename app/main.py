@@ -128,7 +128,6 @@ def equipe_page(request: Request, db: Session = Depends(get_db)):
         "equipe.html", 
         {"request": request, "usuario": nome_usuario, "equipe": minha_equipe}
     )
-
 # NOVA ROTA: O Gestor adiciona um membro à equipe
 @app.post("/equipe/adicionar")
 def adicionar_membro_equipe(
@@ -160,3 +159,38 @@ def adicionar_membro_equipe(
 
     # Atualiza a página com sucesso
     return RedirectResponse(url="/equipe", status_code=status.HTTP_303_SEE_OTHER)
+
+# in app/main.py, after the other /equipe routes
+
+@app.get("/equipe/{colab_id}/metas", response_class=HTMLResponse)
+def metas_colaborador(
+    request: Request,
+    colab_id: int,
+    db: Session = Depends(get_db)
+):
+    nome_usuario = request.cookies.get("usuario_logado")
+    if not nome_usuario:
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+    gestor = db.query(user.User).filter(user.User.nome == nome_usuario).first()
+    if not gestor or not gestor.is_gestor:
+        return RedirectResponse(url="/painel", status_code=status.HTTP_303_SEE_OTHER)
+
+    colaborador = db.query(user.User).filter(
+        user.User.id == colab_id,
+        user.User.gestor_id == gestor.id
+    ).first()
+    if not colaborador:
+        # opcional: flash de erro ou simplesmente voltar
+        return RedirectResponse(url="/equipe", status_code=status.HTTP_303_SEE_OTHER)
+
+    metas = db.query(Meta).filter(Meta.user_id == colaborador.id).all()
+    return templates.TemplateResponse(
+        "metas_colaborador.html",
+        {
+            "request": request,
+            "usuario": nome_usuario,
+            "colaborador": colaborador,
+            "metas": metas,
+        }
+    )

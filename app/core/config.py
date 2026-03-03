@@ -10,7 +10,7 @@ class Settings:
     
     # Chave secreta para segurança (Sessões e Cookies)
     # No futuro, se for para a nuvem, o sistema puxa a senha do servidor (os.getenv)
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "dasbhskadsja-984239$@#$23")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "dasghdcsagdsa")
 
 # Cria uma variável global que poderá ser importada em outros arquivos
 settings = Settings()
