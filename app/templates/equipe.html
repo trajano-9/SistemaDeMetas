@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Minha Equipe - Sistema de Metas{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="text-warning fw-bold">Minha Equipe</h2>
+        <p class="text-muted">Gerencie os colaboradores que respondem diretamente a você.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="/painel" class="btn btn-outline-secondary shadow-sm">Voltar ao Painel</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        
+        <form action="/equipe/adicionar" method="POST" class="mb-4 bg-light p-3 rounded border">
+            <label for="username_colaborador" class="form-label fw-bold">Adicionar Colaborador à Equipe</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="username_colaborador" name="username_colaborador" placeholder="Digite o Nome de Usuário (username) do colaborador..." required>
+                <button type="submit" class="btn btn-warning fw-bold">Vincular Usuário</button>
+            </div>
+            
+            {% if erro %}
+            <div class="text-danger mt-2 small fw-bold">
+                {{ erro }}
+            </div>
+            {% endif %}
+        </form>
+
+        <h5 class="text-secondary border-bottom pb-2 mb-3">Membros Atuais</h5>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome do Colaborador</th>
+                        <th>Nome de Usuário</th>
+                        <th>Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for membro in equipe %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ membro.nome }}</td>
+                        <td>{{ membro.username }}</td>
+                        <td>
+                            <span class="badge {% if membro.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {% if membro.is_active %}Ativo{% else %}Inativo{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary">Ver Metas</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">Nenhum colaborador vinculado a você ainda.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

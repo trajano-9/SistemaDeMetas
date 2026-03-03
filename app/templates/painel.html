@@ -37,16 +37,30 @@
         </div>
     </div>
 
+    {% if usuario_obj.is_gestor %}
     <div class="col-md-4 mb-4">
         <div class="card shadow-sm border-0 border-start border-warning border-5 h-100">
             <div class="card-body">
                 <h6 class="card-title text-muted text-uppercase fw-bold">Colaboradores Vinculados</h6>
-                <h2 class="fw-bold mb-0">0</h2>
-                <a href="#" class="btn btn-sm btn-outline-warning mt-3">Gerenciar Equipe</a>
+                <h2 class="fw-bold mb-0">{{ total_equipe }}</h2>
+                <a href="/equipe" class="btn btn-sm btn-outline-warning mt-3">Gerenciar Equipe</a>
             </div>
         </div>
     </div>
+    {% else %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 border-start border-info border-5 h-100 bg-light">
+            <div class="card-body">
+                <h6 class="card-title text-muted text-uppercase fw-bold">Meu Gestor Atual</h6>
+                <h5 class="fw-bold mb-0 mt-3 text-info">
+                    <i class="bi bi-person-badge me-2"></i>{{ nome_meu_gestor }}
+                </h5>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
 <div class="row mt-5">
     <div class="col-12">
         <h4 class="text-primary fw-bold mb-3">Minhas Metas</h4>

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, status, Depends
+from fastapi import FastAPI, Form, Request, status, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -48,33 +48,47 @@ def registro_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("registro.html", {"request": request, "gestores": gestores})
 
 
+# ROTA PROTEGIDA: Renderiza o Painel principal
 @app.get("/painel", response_class=HTMLResponse)
-def painel_page(request: Request, db: Session = Depends(get_db)): # <-- Adicionamos a conexão com o banco aqui!
-    # 1. Verifica quem está logado
+def painel_page(request: Request, db: Session = Depends(get_db)):
     nome_usuario = request.cookies.get("usuario_logado")
     
     if not nome_usuario:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
-    # 2. Busca o usuário no banco para pegar o ID dele
+    # Busca o usuário logado
     usuario = db.query(user.User).filter(user.User.nome == nome_usuario).first()
 
-    # 3. Busca todas as metas que pertencem a este usuário
+    # 1. Busca as metas
     if usuario:
         minhas_metas = db.query(Meta).filter(Meta.user_id == usuario.id).all()
         total_metas = len(minhas_metas)
     else:
         minhas_metas = []
         total_metas = 0
-        
-    # 4. Envia o total e a lista de metas para o HTML!
+
+    # 2. LÓGICA DE HIERARQUIA: 
+    # Conta a equipe (se for gestor)
+    total_equipe = db.query(user.User).filter(user.User.gestor_id == usuario.id).count() if usuario and usuario.is_gestor else 0
+    
+    # Descobre quem é o chefe dele (se for colaborador ou sub-gestor)
+    nome_meu_gestor = "Não vinculado a um gestor"
+    if usuario and usuario.gestor_id:
+        meu_gestor_obj = db.query(user.User).filter(user.User.id == usuario.gestor_id).first()
+        if meu_gestor_obj:
+            nome_meu_gestor = meu_gestor_obj.nome
+
+    # Envia tudo para o HTML
     return templates.TemplateResponse(
         "painel.html", 
         {
             "request": request, 
             "usuario": nome_usuario, 
+            "usuario_obj": usuario, # Enviamos o usuário completo para o HTML saber se é gestor
             "total_metas": total_metas,
-            "metas": minhas_metas
+            "metas": minhas_metas,
+            "total_equipe": total_equipe,
+            "nome_meu_gestor": nome_meu_gestor
         }
     )
 
@@ -90,3 +104,59 @@ def nova_meta_page(request: Request):
         
     # Se estiver logado, mostra a página do formulário
     return templates.TemplateResponse("nova_meta.html", {"request": request, "usuario": usuario})
+
+# ROTA PROTEGIDA: Renderiza a página da equipe do gestor
+@app.get("/equipe", response_class=HTMLResponse)
+def equipe_page(request: Request, db: Session = Depends(get_db)):
+    # 1. Verifica quem está logado
+    nome_usuario = request.cookies.get("usuario_logado")
+    if not nome_usuario:
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+    # 2. Busca o gestor no banco
+    gestor = db.query(user.User).filter(user.User.nome == nome_usuario).first()
+    
+    # 3. Segurança: Se não for gestor, manda de volta pro painel
+    if not gestor or not gestor.is_gestor:
+        return RedirectResponse(url="/painel", status_code=status.HTTP_303_SEE_OTHER)
+
+    # 4. Busca todos os usuários que têm o ID deste gestor!
+    minha_equipe = db.query(user.User).filter(user.User.gestor_id == gestor.id).all()
+
+    # 5. Manda a lista para a tela nova
+    return templates.TemplateResponse(
+        "equipe.html", 
+        {"request": request, "usuario": nome_usuario, "equipe": minha_equipe}
+    )
+
+# NOVA ROTA: O Gestor adiciona um membro à equipe
+@app.post("/equipe/adicionar")
+def adicionar_membro_equipe(
+    request: Request,
+    username_colaborador: str = Form(...), # Recebe o que o gestor digitou
+    db: Session = Depends(get_db)
+):
+    # 1. Verifica quem é o gestor logado
+    nome_usuario = request.cookies.get("usuario_logado")
+    if not nome_usuario:
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+    gestor = db.query(user.User).filter(user.User.nome == nome_usuario).first()
+
+    # 2. Vai no banco procurar o colaborador que o gestor quer adicionar
+    colaborador = db.query(user.User).filter(   user.User.username == username_colaborador).first()
+
+    # Se digitar o nome errado, devolve a tela com erro
+    if not colaborador:
+        minha_equipe = db.query(user.User).filter(user.User.gestor_id == gestor.id).all()
+        return templates.TemplateResponse(
+            "equipe.html", 
+            {"request": request, "usuario": nome_usuario, "equipe": minha_equipe, "erro": f"O usuário '{username_colaborador}' não foi encontrado."}
+        )
+
+    # 3. A MÁGICA ACONTECE AQUI: Atualiza o chefe desse colaborador!
+    colaborador.gestor_id = gestor.id
+    db.commit()
+
+    # Atualiza a página com sucesso
+    return RedirectResponse(url="/equipe", status_code=status.HTTP_303_SEE_OTHER)

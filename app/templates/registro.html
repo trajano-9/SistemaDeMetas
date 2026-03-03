@@ -14,12 +14,12 @@
         <form action="/auth/registro" method="POST">
             <div class="mb-3">
                 <label for="nome" class="form-label">Nome Completo</label>
-                <input type="text" class="form-control" id="nome" name="nome"  required>
+                <input type="text" class="form-control" id="nome" name="nome" required>
             </div>
 
             <div class="mb-3">
                 <label for="username" class="form-label">Nome de Usuário</label>
-                <input type="text" class="form-control" id="username" name="username"  required>
+                <input type="text" class="form-control" id="username" name="username" required>
             </div>
             
             <div class="mb-3">
@@ -36,6 +36,18 @@
                 </select>
             </div>
             
+            <div class="mb-4" id="div-gestor" style="display: none;">
+                <label for="nome_gestor" class="form-label fw-bold text-success">Qual o Nome de Usuário do seu Gestor?</label>
+                <input type="text" class="form-control border-success" id="nome_gestor" name="nome_gestor" placeholder="Ex: lucas.gestor">
+                <div class="form-text small">Obrigatório apenas para colaboradores.</div>
+            </div>
+
+            {% if erro %}
+            <div class="alert alert-danger py-2 mt-2 mb-4" role="alert">
+                <strong>Atenção:</strong> {{ erro }}
+            </div>
+            {% endif %}
+            
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg">Cadastrar</button>
             </div>
@@ -47,4 +59,6 @@
         
     </div>
 </div>
+
+<script src="/static/js/registro.js"></script>
 {% endblock %}

@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 @router.post("/registro")
 def registrar_usuario(
-    # Captura os campos exatamente com o atributo "name" que está no HTML
+    request: Request,
     nome: str = Form(...),
     username: str = Form(...),
     password: str = Form(...),
@@ -22,30 +22,31 @@ def registrar_usuario(
     # 1. Verifica se já existe alguém com esse nome de usuário no banco
     usuario_existente = db.query(User).filter(User.username == username).first()
     if usuario_existente:
-        raise HTTPException(status_code=400, detail="Este nome de usuário já está em uso.")
+        return templates.TemplateResponse("registro.html", {"request": request, "erro": "Este nome de usuário já está em uso."})
 
-    # 2. Criptografa a senha para ninguém (nem você como admin) conseguir ler
+    # 2. Criptografa a senha
     senha_criptografada = get_password_hash(password)
 
-    # 3. Prepara o novo usuário com os dados do formulário
+    # 3. Prepara o novo usuário APENAS com os dados básicos (sem gestor_id por enquanto)
     novo_usuario = User(
         nome=nome,
         username=username,
         hashed_password=senha_criptografada,
-        is_gestor=is_gestor
+        is_gestor=is_gestor,
+        gestor_id=None # Nasce sem vínculo! Será adicionado depois pelo gestor.
     )
     
-    # 4. Salva no banco de dados de fato
+    # 4. Salva no banco de dados
     db.add(novo_usuario)
     db.commit()
     db.refresh(novo_usuario)
 
-    # 5. Se deu tudo certo, redireciona o usuário para a página de login
+    # 5. Se deu tudo certo, redireciona para a página de login
     return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
 @router.post("/login")
 def login_usuario(
-    request: Request, # <-- Adicionamos o request aqui
+    request: Request,
     username: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(get_db)
@@ -53,12 +54,11 @@ def login_usuario(
     usuario = db.query(User).filter(User.username == username).first()
 
     if not usuario or not verify_password(password, usuario.hashed_password):
-        # EM VEZ DE RAISE HTTP EXCEPTION, RENDERIZAMOS A TELA COM A VARIÁVEL DE ERRO:
+        # Renderizamos a tela com a variável de erro:
         return templates.TemplateResponse(
             "login.html", 
             {"request": request, "erro": "Usuário ou senha incorretos."}
         )
-
     
     resposta = RedirectResponse(url="/painel", status_code=status.HTTP_303_SEE_OTHER)
     resposta.set_cookie(key="usuario_logado", value=usuario.nome)
