@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Meta - Sistema de Metas{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="text-primary fw-bold">Criar Nova Meta</h2>
+        <p class="text-muted">Defina o indicador, a perspectiva, o peso e a escala de avaliação.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="/painel" class="btn btn-outline-secondary shadow-sm">Voltar ao Painel</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <form action="/metas/nova" method="POST">
+            
+            <h5 class="text-secondary border-bottom pb-2 mb-3 mt-2">1. Dados Principais</h5>
+            <div class="row mb-4">
+                <div class="col-md-12 mb-3">
+                    <label for="indicador" class="form-label fw-bold">Indicador / Descrição da Meta</label>
+                    <input type="text" class="form-control" id="indicador" name="indicador"  required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="perspectiva" class="form-label fw-bold">Perspectiva</label>
+                    <select class="form-select" id="perspectiva" name="perspectiva" required>
+                        <option value="" disabled selected>Selecione a perspectiva...</option>
+                        <option value="Financeira">Financeira</option>
+                        <option value="Cliente">Cliente</option>
+                        <option value="Processos">Processos Internos</option>
+                        <option value="Pessoas">Aprendizado e Crescimento (Pessoas)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="peso" class="form-label fw-bold">Peso da Meta (%)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="peso" name="peso" min="1" max="100" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="text-secondary border-bottom pb-2 mb-3">2. Definição da Escala de Avaliação</h5>
+            <p class="small text-muted mb-3">Descreva o que é necessário alcançar para obter cada uma das notas na avaliação final (Valores, Porcentagens, Quantidades).</p>
+            
+            <div class="row mb-4">
+                <div class="col-md-12 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-success text-white fw-bold" style="width: 45px; justify-content: center;">A</span>
+                        <input type="text" class="form-control border-success" name="escala_a"  required>
+                    </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white fw-bold" style="width: 45px; justify-content: center;">B</span>
+                        <input type="text" class="form-control border-primary" name="escala_b"  required>
+                    </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-info text-white fw-bold" style="width: 45px; justify-content: center;">C</span>
+                        <input type="text" class="form-control border-info" name="escala_c" required>
+                    </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-warning text-dark fw-bold" style="width: 45px; justify-content: center;">D</span>
+                        <input type="text" class="form-control border-warning" name="escala_d"  required>
+                    </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-danger text-white fw-bold" style="width: 45px; justify-content: center;">E</span>
+                        <input type="text" class="form-control border-danger" name="escala_e" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a href="/painel" class="btn btn-light me-md-2">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-5 fw-bold">Salvar Meta (Enviar para Aprovação)</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

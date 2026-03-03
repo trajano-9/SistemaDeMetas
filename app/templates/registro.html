@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro - Sistema de Metas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="card shadow-sm p-4" style="width: 100%; max-width: 450px;">
+        
+        <div class="text-center mb-4">
+            <h3 class="text-primary fw-bold">Criar Conta</h3>
+            <p class="text-muted">Junte-se ao sistema de metas</p>
+        </div>
+
+        <form action="/auth/registro" method="POST">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="nome" name="nome"  required>
+            </div>
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Nome de Usuário</label>
+                <input type="text" class="form-control" id="username" name="username"  required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="********" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Qual é o seu perfil de acesso?</label>
+                <select class="form-select border-primary" name="is_gestor" required>
+                    <option value="" disabled selected>Selecione uma opção...</option>
+                    <option value="false">Sou Colaborador (Visualizo minhas metas)</option>
+                    <option value="true">Sou Gestor (Acompanho a equipe)</option>
+                </select>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Cadastrar</button>
+            </div>
+        </form>
+        
+        <div class="text-center mt-3">
+            <small>Já tem uma conta? <a href="/login" class="text-decoration-none">Faça login</a></small>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
